@@ -326,7 +326,7 @@ Router.prototype.initialize = function() {
   };
 
   // initialize
-  this._page();
+  this._page({decodeURLComponents: false});
 };
 
 Router.prototype._buildTracker = function() {

@@ -26,12 +26,12 @@ function (test, next) {
 
   FlowRouter.route(pathDef, {
     action: function(params) {
-      test.equal(params.key, "abc");
+      test.equal(params.key, "abc +@%");
       rendered++;
     }
   });
 
-  FlowRouter.go(pathDef, {key: "abc"});
+  FlowRouter.go(pathDef, {key: "abc%20%2B%40%25"});
 
   setTimeout(function() {
     test.equal(rendered, 1);
