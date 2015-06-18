@@ -31,7 +31,7 @@ function (test, next) {
     }
   });
 
-  FlowRouter.go(pathDef, {key: "abc%20%2B%40%25"});
+  FlowRouter.go(pathDef, {key: "abc +@%"});
 
   setTimeout(function() {
     test.equal(rendered, 1);
@@ -240,10 +240,10 @@ Tinytest.addAsync('Client - Router - setParams - preserve query strings', functi
     }
   });
 
-  FlowRouter.go(pathDef, {cat: "meteor", id: "200"}, {aa: "20"});
+  FlowRouter.go(pathDef, {cat: "meteor", id: "200 +%"}, {aa: "20 +%"});
   setTimeout(function() {
     // return done();
-    var success = FlowRouter.setParams({id: "700"});
+    var success = FlowRouter.setParams({id: "700 +%"});
     test.isTrue(success);
     setTimeout(validate, 50);
   }, 50);
@@ -252,9 +252,9 @@ Tinytest.addAsync('Client - Router - setParams - preserve query strings', functi
     test.equal(paramsList.length, 2);
     test.equal(queryParamsList.length, 2);
 
-    test.equal(_.pick(paramsList[0], "id", "cat"), {cat: "meteor", id: "200"});
-    test.equal(_.pick(paramsList[1], "id", "cat"), {cat: "meteor", id: "700"});
-    test.equal(queryParamsList, [{aa: "20"}, {aa: "20"}]);
+    test.equal(_.pick(paramsList[0], "id", "cat"), {cat: "meteor", id: "200 +%"});
+    test.equal(_.pick(paramsList[1], "id", "cat"), {cat: "meteor", id: "700 +%"});
+    test.equal(queryParamsList, [{aa: "20 +%"}, {aa: "20 +%"}]);
     done();
   }
 });

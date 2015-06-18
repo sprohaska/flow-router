@@ -96,7 +96,7 @@ Router.prototype.path = function(pathDef, fields, queryParams) {
     // remove +?*
     key = key.replace(/[\+\*\?]+/g, "");
 
-    return fields[key] || "";
+    return encodeURIComponent(fields[key] || "");
   });
 
   var strQueryParams = this._qs.stringify(queryParams || {});
