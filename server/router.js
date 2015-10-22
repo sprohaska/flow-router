@@ -1,20 +1,30 @@
 var Qs = Npm.require('qs');
 
 Router = function () {
+  this._routes = [];
   this._routesMap = {};
-  this._routeNamesMap = {};
   this.subscriptions = Function.prototype;
+
+  // holds onRoute callbacks
+  this._onRouteCallbacks = [];
 };
 
-
-Router.prototype.route = function(path, options) {
-  this._routesMap[path] = new Route(this, path, options);
+Router.prototype.route = function(pathDef, options) {
+  if (!/^\/.*/.test(pathDef)) {
+    var message = "route's path must start with '/'";
+    throw new Error(message);
+  }
+  
+  options = options || {};
+  var route = new Route(this, pathDef, options);
+  this._routes.push(route);
 
   if (options.name) {
-    this._routeNamesMap[options.name] = path;
+    this._routesMap[options.name] = route;
   }
 
-  return this._routesMap[path];
+  this._triggerRouteRegister(route);
+  return route;
 };
 
 Router.prototype.group = function(options) {
@@ -22,17 +32,9 @@ Router.prototype.group = function(options) {
 };
 
 Router.prototype.path = function(pathDef, fields, queryParams) {
-  if (this._routeNamesMap[pathDef]) {
-    pathDef = this._routeNamesMap[pathDef];
-  }
-
   if (this._routesMap[pathDef]) {
     pathDef = this._routesMap[pathDef].path;
   }
-
-  // remove trailing slash(es)
-  // but kepp the root slash if it's the only one
-  pathDef = pathDef.match(/^\/{1}$/) ? pathDef : pathDef.replace(/\/+$/, "");
 
   fields = fields || {};
   var regExp = /(:[\w\(\)\\\+\*\.\?]+)+/g;
@@ -46,12 +48,38 @@ Router.prototype.path = function(pathDef, fields, queryParams) {
     return fields[key] || "";
   });
 
+  path = path.replace(/\/\/+/g, "/"); // Replace multiple slashes with single slash
+
+  // remove trailing slash
+  // but keep the root slash if it's the only one
+  path = path.match(/^\/{1}$/) ? path: path.replace(/\/$/, "");
+
   var strQueryParams = Qs.stringify(queryParams || {});
   if(strQueryParams) {
     path += "?" + strQueryParams;
   }
 
   return path;
+};
+
+Router.prototype.onRouteRegister = function(cb) {
+  this._onRouteCallbacks.push(cb);
+};
+
+Router.prototype._triggerRouteRegister = function(currentRoute) {
+  // We should only need to send a safe set of fields on the route
+  // object.
+  // This is not to hide what's inside the route object, but to show 
+  // these are the public APIs
+  var routePublicApi = _.pick(currentRoute, 'name', 'pathDef', 'path');
+  var omittingOptionFields = [
+    'triggersEnter', 'triggersExit', 'action', 'subscriptions', 'name'
+  ];
+  routePublicApi.options = _.omit(currentRoute.options, omittingOptionFields);
+
+  _.each(this._onRouteCallbacks, function(cb) {
+    cb(routePublicApi);
+  });
 };
 
 
@@ -110,5 +138,9 @@ Router.prototype.ready = function() {
 
 
 Router.prototype.initialize = function() {
+  // client only
+};
+
+Router.prototype.wait = function() {
   // client only
 };

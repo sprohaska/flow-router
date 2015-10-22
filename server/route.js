@@ -1,7 +1,12 @@
-Route = function(router, path, options) {
+Route = function(router, pathDef, options) {
   options = options || {};
+  this.options = options;
+  this.name = options.name;
+  this.pathDef = pathDef;
 
-  this.path = path;
+  // Route.path is deprecated and will be removed in 3.0
+  this.path = pathDef;
+
   this.action = options.action || Function.prototype;
   this.subscriptions = options.subscriptions || Function.prototype;
   this._subsMap = {};
